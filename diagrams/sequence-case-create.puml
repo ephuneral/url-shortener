@@ -1,0 +1,36 @@
+@startuml Sequence Create
+title Sequence Diagram - Create Short URL
+
+actor User
+participant "API Handler" as Handler
+participant "URL Service" as Service
+participant "URL Repository" as Repo
+database "PostgreSQL" as DB
+
+User -> Handler: POST /api/v1/shorten\n{"url": "https://..."}
+activate Handler
+
+Handler -> Handler: JSON Validation
+Handler -> Service: Shorten(longURL)
+activate Service
+
+Service -> Service: URL format validation
+Service -> Repo: Save(longURL)
+activate Repo
+
+Repo -> DB: INSERT INTO urls (original_url)
+activate DB
+DB --> Repo: RETURNING id
+deactivate DB
+
+Repo --> Service: id
+deactivate Repo
+
+Service -> Service: Base62Encode(id)
+Service --> Handler: shortCode
+deactivate Service
+
+Handler --> User: 201 Created\n{"short_url": "http://.../abc"}
+deactivate Handler
+
+@enduml

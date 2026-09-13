@@ -1,0 +1,44 @@
+@startuml Sequence Redirect
+title Sequence Diagram - Redirect to Original URL
+
+actor User
+participant "API Handler" as Handler
+participant "URL Service" as Service
+participant "URL Repository" as Repo
+database "PostgreSQL" as DB
+
+User -> Handler: GET /abc
+activate Handler
+
+Handler -> Service: Resolve("abc")
+activate Service
+
+Service -> Repo: GetByCode("abc")
+activate Repo
+
+Repo -> DB: SELECT original_url FROM urls WHERE short_code = 'abc'
+activate DB
+
+alt URL found
+    DB --> Repo: original_url
+    Repo --> Service: original_url
+    deactivate Repo
+    
+    Service --> Handler: original_url
+    deactivate Service
+    
+    Handler --> User: 302 Redirect\nLocation: original_url
+else URL not found
+    DB --> Repo: null
+    Repo --> Service: not found error
+    deactivate Repo
+    
+    Service --> Handler: not found error
+    deactivate Service
+    
+    Handler --> User: 404 Not Found
+end
+
+deactivate Handler
+
+@enduml

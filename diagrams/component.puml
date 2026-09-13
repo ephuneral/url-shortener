@@ -1,0 +1,20 @@
+@startuml Component
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Component Diagram - Web Application
+
+Container(web_app, "Web Application", "Go 1.27.1 + chi") {
+    Component(api_handler, "API Handler", "chi router", "Accepts HTTP requests and validates input data")
+    Component(url_service, "URL Service", "Go", "Business logic: code generation, URL validation")
+    Component(url_repo, "URL Repository", "Go + pgx", "Database operations: saving and searching for URLs")
+    Component(base62_encoder, "Base62 Encoder", "Go", "Base62 ID encoding/decoding")
+}
+
+ContainerDb(database, "PostgreSQL", "Stores data")
+
+Rel(api_handler, url_service, "Calls")
+Rel(url_service, url_repo, "Calls")
+Rel(url_service, base62_encoder, "Uses")
+Rel(url_repo, database, "Read/write", "SQL")
+
+@enduml

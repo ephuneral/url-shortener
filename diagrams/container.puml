@@ -1,0 +1,16 @@
+@startuml Container
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Container Diagram - URL Shortener
+
+Person(user, "User")
+
+System_Boundary(url_shortener, "URL Shortener") {
+    Container(web_app, "Web Application", "Go 1.27.1 + chi", "Accepts HTTP requests and processes business logic")
+    ContainerDb(database, "Database", "PostgreSQL 15+", "Stores the mapping of short codes to original URLs")
+}
+
+Rel(user, web_app, "Uses", "HTTP/JSON")
+Rel(web_app, database, "Read/write data", "SQL over TCP")
+
+@enduml

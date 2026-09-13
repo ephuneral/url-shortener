@@ -1,0 +1,16 @@
+@startuml Context
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+title Context Diagram - URL Shortener
+
+Person(user, "User", "Wants to shorten a long URL or follow a short link")
+
+System(url_shortener, "URL Shortener", "A service for creating short links and managing redirects for them")
+
+System_Ext(browser, "Web-browser", "Used to interact with the service")
+
+Rel(user, browser, "Uses")
+Rel(user, url_shortener, "Creates short links", "HTTP/JSON")
+Rel(browser, url_shortener, "Follows short links", "HTTP")
+
+@enduml
