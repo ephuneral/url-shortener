@@ -12,6 +12,7 @@ import (
 
 	"github.com/ephuneral/url-shortener/internal/config"
 	"github.com/ephuneral/url-shortener/internal/database"
+	"github.com/ephuneral/url-shortener/internal/repository"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 )
@@ -55,6 +56,8 @@ func main() {
 		os.Exit(1)
 	}
 	slog.Info("migrations applied successfully")
+
+	urlRepo := repository.NewPostgresURLRepository(pool)
 
 	// Create router
 	r := chi.NewRouter()
@@ -112,4 +115,6 @@ func main() {
 	}
 
 	slog.Info("server stopped gracefully")
+
+	_ = urlRepo
 }
