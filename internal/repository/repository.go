@@ -7,6 +7,6 @@ import (
 )
 
 type URLRepository interface {
-	Save(ctx context.Context, originalURL string) (int64, error)
+	Save(ctx context.Context, originalURL string) (id int64, shortCode string, err error)
 	GetByShrortCode(ctx context.Context, shortCode string) (*model.URL, error)
 }

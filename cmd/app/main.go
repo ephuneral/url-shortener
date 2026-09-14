@@ -12,7 +12,9 @@ import (
 
 	"github.com/ephuneral/url-shortener/internal/config"
 	"github.com/ephuneral/url-shortener/internal/database"
+	"github.com/ephuneral/url-shortener/internal/handler"
 	"github.com/ephuneral/url-shortener/internal/repository"
+	"github.com/ephuneral/url-shortener/internal/service"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 )
@@ -57,7 +59,14 @@ func main() {
 	}
 	slog.Info("migrations applied successfully")
 
+	// Create Repository
 	urlRepo := repository.NewPostgresURLRepository(pool)
+
+	// Create service
+	urlService := service.NewURLService(urlRepo, cfg.App.BaseURL)
+
+	//Create handler
+	urlHandler := handler.NewURLHandler(urlService)
 
 	// Create router
 	r := chi.NewRouter()
@@ -68,6 +77,7 @@ func main() {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(30 * time.Second))
 
+	// GET /health - healthcheck
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		pingCtx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
 		defer cancel()
@@ -81,6 +91,10 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{"status":"ok"}`))
 	})
+
+	// API Endpoints (routes)
+	r.Post("/api/v1/shorten", urlHandler.CreateShortURL)
+	r.Get("/{code}", urlHandler.Redirect)
 
 	// Run HTTP server
 	srv := &http.Server{
@@ -100,6 +114,7 @@ func main() {
 
 	slog.Info("server is running", "addr", srv.Addr)
 
+	// Graceful shutdown
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
@@ -117,4 +132,5 @@ func main() {
 	slog.Info("server stopped gracefully")
 
 	_ = urlRepo
+	_ = urlService
 }

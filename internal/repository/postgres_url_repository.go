@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/ephuneral/url-shortener/internal/model"
+	"github.com/ephuneral/url-shortener/pkg/base62"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -18,16 +19,24 @@ func NewPostgresURLRepository(pool *pgxpool.Pool) *PostgresURLRepository {
 	return &PostgresURLRepository{pool: pool}
 }
 
-func (r *PostgresURLRepository) Save(ctx context.Context, originalURL string) (int64, error) {
-	query := `INSERT INTO urls (original_url) VALUES ($1) RETURNING id`
-
+func (r *PostgresURLRepository) Save(ctx context.Context, originalURL string) (int64, string, error) {
 	var id int64
-	err := r.pool.QueryRow(ctx, query, originalURL).Scan(&id)
+	err := r.pool.QueryRow(ctx, `SELECT nextval(pg_get_serial_sequence('urls', 'id'))`).Scan(&id)
 	if err != nil {
-		return 0, fmt.Errorf("save url: %w", err)
+		return 0, "", fmt.Errorf("get next id: %w", err)
 	}
 
-	return id, nil
+	shortCode, err := base62.Encode(id)
+	if err != nil {
+		return 0, "", fmt.Errorf("encode id to base62: %w", err)
+	}
+
+	_, err = r.pool.Exec(ctx, `INSERT INTO urls (id, short_code, original_url) VALUES ($1, $2, $3)`, id, shortCode, originalURL)
+	if err != nil {
+		return 0, "", fmt.Errorf("insert url: %w", err)
+	}
+
+	return id, shortCode, nil
 }
 
 func (r *PostgresURLRepository) GetByShrortCode(ctx context.Context, shortCode string) (*model.URL, error) {
