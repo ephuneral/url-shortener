@@ -56,7 +56,7 @@ jobs:
   update-manifest:
     runs-on: ubuntu-latest
     needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push'
     permissions:
       contents: write
 
