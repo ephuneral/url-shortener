@@ -69,7 +69,7 @@ jobs:
       - name: Update Kubernetes manifest
         run: |
           SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
-          sed -i "s|image: ghcr.io/.*:.*|image: ghcr.io/${{ github.repository }}:${SHORT_SHA}|" k8s/app-deployment.yaml
+          sed -i "s|image: ghcr.io/.*:.*|image: ghcr.io/${{ github.repository }}:${SHORT_SHA}|" k8s/deployment.yaml
           
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
