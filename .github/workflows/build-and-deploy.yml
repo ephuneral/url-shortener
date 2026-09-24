@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - master
+      - 'feature/**'
     paths:
       - 'cmd/**'
       - 'internal/**'
@@ -12,8 +13,7 @@ on:
       - 'Dockerfile'
   push:
     branches:
-      - master
-      - 'feature/**'
+      - master      
     paths:
       - 'cmd/**'
       - 'internal/**'
