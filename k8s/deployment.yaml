@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: url-shortener
-        image: ghcr.io/ephuneral/url-shortener:7f1710b
+        image: ghcr.io/ephuneral/url-shortener:fc26125
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
